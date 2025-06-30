@@ -52,7 +52,7 @@ export function CertificationCard({ certification }: CertificationCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter>
+      {/* <CardFooter>
         <Button
           asChild
           className="w-full bg-blue-500 hover:bg-blue-700 transition-colors duration-200"
@@ -61,7 +61,7 @@ export function CertificationCard({ certification }: CertificationCardProps) {
             Ver Certificação
           </a>
         </Button>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }
