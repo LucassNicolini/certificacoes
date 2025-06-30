@@ -1,69 +1,55 @@
-# 🔍 Dashboard de Busca de Certificações com IA
+# Dashboard de Busca de Certificações com IA
 
-Este projeto é um sistema web simples e funcional para buscar informações sobre certificações de tecnologia. Ao digitar um termo (ex: "Azure", "AWS", "Python"), o sistema utiliza uma API baseada em IA (Google Gemini) para buscar dados em fontes confiáveis e exibir os resultados de forma estruturada.
+Este projeto permite buscar informações sobre certificações de tecnologia a partir de um termo (por exemplo: Azure, AWS, Python). Os dados são obtidos via API baseada em IA (Google Gemini) e exibidos de forma estruturada.
 
----
+## Tecnologias
 
-## 🚀 Tecnologias Utilizadas
+- Next.js
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- ESLint
+- Google Gemini API
+- Cache em memória (Map)
 
-- **Framework:** [Next.js](https://nextjs.org/)
-- **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
-- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Componentes de UI:** [shadcn/ui](https://ui.shadcn.com/)
-- **Linting e Qualidade:** [ESLint](https://eslint.org/)
-- **IA Generativa:** [Google Gemini API](https://ai.google.dev/)
-- **Cache em memória:** Utilização de `Map` para armazenar os dados retornados pela IA e evitar chamadas repetidas.
+## Funcionalidades
 
----
-
-## ✅ Funcionalidades
-
-- Campo de busca com botão de acionamento.
-- Integração com API própria (`/api/search`) que consulta o modelo Gemini.
-- Filtro por **nível de certificação** e **idioma disponível**.
-- Exibição dos resultados em **cards responsivos**, contendo:
+- Campo de busca com botão
+- Rota API (`/api/search`) que consulta o modelo Gemini
+- Filtros por nível de certificação e idioma
+- Cards responsivos para exibir:
   - Nome da certificação
-  - Descrição (traduzida para português)
+  - Descrição em português
   - Idiomas disponíveis
   - Nível (Iniciante, Intermediário, Avançado)
   - Preço estimado
   - Link oficial
-  - Provedor da certificação (Microsoft, Google, AWS...)
+  - Provedor (Microsoft, Google, AWS, etc.)
 
----
+## Como Funciona
 
-## ⚙️ Estrutura e Lógica
+1. O usuário faz uma busca.
+2. O servidor verifica o cache (Map).
+3. Se não estiver em cache, consulta a IA e salva o resultado.
+4. Retorna os dados com indicação da origem (cache ou IA).
 
-### Backend (API Route)
+## Instalação
 
-- Localizado em `/api/search`
-- Consulta o modelo `gemini-1.5-flash`
-- Utiliza um `prompt` estruturado solicitando resposta **em JSON puro**
-- Implementa **cache com `Map<string, any>`** para economizar chamadas à API e melhorar performance
-- Identifica se os dados vieram da IA ou do cache e adiciona a propriedade `source: "IA" | "cache"` à resposta
-
-## 🔄 Cache
-
-A camada de cache evita requisições desnecessárias à API da IA. A lógica é simples:
-
-1. Verifica se o termo pesquisado já está armazenado no `Map`.
-2. Se sim, retorna os dados do cache com `source: "cache"`.
-3. Se não, realiza a requisição à IA, armazena no cache e retorna com `source: "IA"`.
-
----
-
-## ▶️ Como Rodar Localmente
-
-### 1. Pré-requisitos
-
-- Node.js 18+
-- Conta no Google Cloud com acesso à [Gemini API](https://ai.google.dev/)
-- Chave da API (`GEMINI_API_KEY`) definida no `.env.local`
-
-### 2. Instalação
-
-```bash
-git clone https://github.com/LucassNicolini/certificacoes.git
-cd seu-repo
-npm install
-```
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/LucassNicolini/certificacoes.git
+   cd certificacoes
+   ```
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Crie um arquivo `.env.local` com a chave da API:
+   ```env
+   GEMINI_API_KEY=SEU_TOKEN_AQUI
+   ```
+4. Rode em modo de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+5. Acesse `http://localhost:3000` no navegador.
