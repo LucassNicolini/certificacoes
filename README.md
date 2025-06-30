@@ -1,6 +1,6 @@
 # Dashboard de Busca de Certificações com IA
 
-Este projeto permite buscar informações sobre certificações de tecnologia a partir de um termo (por exemplo: Azure, AWS, Python). Os dados são obtidos via API baseada em IA (Google Gemini) e exibidos de forma estruturada.
+Este projeto permite buscar informações sobre cursos e certificações de tecnologia a partir das habilidades adicionadas pelo usuário (Soft Skills, Hard Skills e Ferramentas). Os dados são obtidos via API baseada em IA (Google Gemini) e exibidos de forma estruturada.
 
 ## Tecnologias
 
@@ -14,24 +14,30 @@ Este projeto permite buscar informações sobre certificações de tecnologia a 
 
 ## Funcionalidades
 
-- Campo de busca com botão
-- Rota API (`/api/search`) que consulta o modelo Gemini
-- Filtros por nível de certificação e idioma
+- Seções de entrada para Soft Skills, Hard Skills e Ferramentas
+  - Campo de texto para nome
+  - Select de nível (1–5)
+  - Botão “Adicionar”
+  - Lista de itens adicionados com botão “Remover”
+- Botão “Buscar” para enviar apenas as habilidades de nível mais baixo
+- Rota API (`/api/search`) que gera prompt agregando apenas as skills fracas
 - Cards responsivos para exibir:
-  - Nome da certificação
+  - Nome do curso ou certificação
   - Descrição em português
   - Idiomas disponíveis
-  - Nível (Iniciante, Intermediário, Avançado)
-  - Preço estimado
+  - Nível de dificuldade (básico/intermediário/avançado)
+  - Preço estimado ou “Gratuito”
   - Link oficial
-  - Provedor (Microsoft, Google, AWS, etc.)
+  - Provedor real (Microsoft, AWS, Google Cloud, etc.)
 
 ## Como Funciona
 
-1. O usuário faz uma busca.
-2. O servidor verifica o cache (Map).
-3. Se não estiver em cache, consulta a IA e salva o resultado.
-4. Retorna os dados com indicação da origem (cache ou IA).
+1. O usuário adiciona Soft Skills, Hard Skills e Ferramentas, definindo nível de 1 a 5.
+2. Ao clicar em **Buscar**, o front calcula as habilidades de nível mais baixo em cada categoria.
+3. A API verifica o cache (Map) usando o payload JSON das skills fracas.
+4. Se não estiver em cache, gera prompt customizado e consulta o modelo Gemini.
+5. Retorna lista abrangente de 5–10 cursos/certificações reais por habilidade.
+6. Exibe resultados em cards, sem fonte de origem exibida no front.
 
 ## Instalação
 
@@ -53,3 +59,4 @@ Este projeto permite buscar informações sobre certificações de tecnologia a 
    npm run dev
    ```
 5. Acesse `http://localhost:3000` no navegador.
+
