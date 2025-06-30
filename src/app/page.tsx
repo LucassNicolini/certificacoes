@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,73 +29,53 @@ interface ApiResponse {
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [results, setResults] = useState<Certification[]>([]);
-  const [filteredResults, setFilteredResults] = useState<Certification[]>([]);
+  const [data, setData] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchSource, setSearchSource] = useState<string | null>(null);
 
-  const [availableLevels, setAvailableLevels] = useState<string[]>([]);
-  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [selectedLanguage, setSelectedLanguage] = useState("all");
 
-  useEffect(() => {
-    const applyFilters = () => {
-      let updatedResults = [...results];
+  const certifications = data?.certifications ?? [];
+  const source = data?.source;
 
-      if (selectedLevel !== "all") {
-        updatedResults = updatedResults.filter(
-          (cert) => cert.level === selectedLevel
-        );
-      }
+  const availableLevels = useMemo(
+    () => Array.from(new Set(certifications.map((c) => c.level))),
+    [certifications]
+  );
+  const availableLanguages = useMemo(
+    () =>
+      Array.from(
+        new Set(certifications.flatMap((c) => c.languages))
+      ).sort(),
+    [certifications]
+  );
 
-      if (selectedLanguage !== "all") {
-        updatedResults = updatedResults.filter((cert) =>
-          cert.languages.includes(selectedLanguage)
-        );
-      }
-      setFilteredResults(updatedResults);
-    };
-
-    applyFilters();
-  }, [results, selectedLevel, selectedLanguage]);
+  const filtered = useMemo(() => {
+    return certifications.filter((c) => {
+      return (
+        (selectedLevel === "all" || c.level === selectedLevel) &&
+        (selectedLanguage === "all" ||
+          c.languages.includes(selectedLanguage))
+      );
+    });
+  }, [certifications, selectedLevel, selectedLanguage]);
 
   const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
+    const term = searchTerm.trim();
+    if (!term) return;
 
     setIsLoading(true);
     setError(null);
-    setResults([]);
-    setFilteredResults([]);
-    setSearchSource(null);
+    setData(null);
     setSelectedLevel("all");
     setSelectedLanguage("all");
-    setAvailableLevels([]);
-    setAvailableLanguages([]);
 
     try {
-      const response = await fetch(
-        `/api/search?query=${encodeURIComponent(searchTerm)}`
-      );
-      if (!response.ok) {
-        throw new Error("Falha ao buscar os dados. Tente novamente.");
-      }
-
-      const data: ApiResponse = await response.json();
-      setResults(data.certifications);
-      setSearchSource(data.source);
-
-      if (data.certifications.length > 0) {
-        const levels = [
-          ...new Set(data.certifications.map((cert) => cert.level)),
-        ];
-        const languages = [
-          ...new Set(data.certifications.flatMap((cert) => cert.languages)),
-        ];
-        setAvailableLevels(levels);
-        setAvailableLanguages(languages.sort());
-      }
+      const res = await fetch(`/api/search?query=${encodeURIComponent(term)}`);
+      if (!res.ok) throw new Error("Falha ao buscar os dados.");
+      const json: ApiResponse = await res.json();
+      setData(json);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -103,29 +83,36 @@ export default function Dashboard() {
     }
   };
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter") handleSearch();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [searchTerm]);
+
   return (
     <div className="container mx-auto p-4 sm:p-8">
       <h1 className="text-3xl font-bold mb-6 text-center">
         Busca de Certificações
       </h1>
+
       <div className="flex flex-col sm:flex-row gap-2 mb-4 max-w-2xl mx-auto">
         <Input
-          type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Digite a tecnologia (ex: Azure, AWS)..."
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
         <Button
           onClick={handleSearch}
           disabled={isLoading}
-          className="bg-blue-500 cursor-pointer hover:bg-blue-900 transition-colors duration-200"
+          className="bg-blue-500 hover:bg-blue-900 transition-colors"
         >
           {isLoading ? "Buscando..." : "Buscar"}
         </Button>
       </div>
 
-      {results.length > 0 && (
+      {certifications.length > 0 && (
         <div className="flex flex-col sm:flex-row gap-4 mb-6 max-w-2xl mx-auto">
           <Select
             value={selectedLevel}
@@ -137,9 +124,9 @@ export default function Dashboard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Níveis</SelectItem>
-              {availableLevels.map((level) => (
-                <SelectItem key={level} value={level}>
-                  {level}
+              {availableLevels.map((lvl) => (
+                <SelectItem key={lvl} value={lvl}>
+                  {lvl}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -165,25 +152,19 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="text-center h-6 mb-4">
-        {searchSource && (
-          <p className="text-sm text-gray-500">
-            Dados retornados do:{" "}
-            <span
-              className={`font-bold ${
-                searchSource === "cache" ? "text-green-600" : "text-blue-600"
-              }`}
-            >
-              {searchSource.toUpperCase()}
-            </span>
-          </p>
-        )}
-      </div>
+      {source && (
+        <p className="text-center text-sm text-gray-500 mb-4">
+          Dados de:{" "}
+          <span className={`font-bold ${source === "cache" ? "text-green-600" : "text-blue-600"}`}>
+            {source.toUpperCase()}
+          </span>
+        </p>
+      )}
 
-      {error && <p className="text-red-500 text-center">{error}</p>}
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResults.map((cert) => (
+        {filtered.map((cert) => (
           <CertificationCard key={cert.name} certification={cert} />
         ))}
       </div>

@@ -28,9 +28,8 @@ export async function GET(request: NextRequest) {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-      Você é um assistente especialista em certificações de tecnologia.
-      Sua tarefa é buscar informações sobre certificações relacionadas ao termo "${query}".
-      Busque em fontes oficiais como Microsoft Learn, AWS Training and Certification, Google Cloud Skills Boost, etc.
+      Buscar informações sobre certificações e cursos gratuitos relacionadas ao termo "${query}".
+      Busque em fontes oficiais como Microsoft Learn, AWS Training and Certification, Google Cloud Skills Boost, CertiProf e outros sites confiáveis.
       Retorne uma lista de certificações em formato JSON.
       O JSON deve ter uma chave principal "certifications" que contém um array de objetos.
       Cada objeto deve ter as seguintes chaves:
